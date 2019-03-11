@@ -1,0 +1,5 @@
+argparse
+django
+pillow
+image
+numpy
