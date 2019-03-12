@@ -39,7 +39,7 @@ Tests:
 `sh tests/testing.sh`
 
 Clear test folder:
-`sh resettests.sh`
+`sh tests/resettests.sh`
 
 ***
 
