@@ -66,3 +66,9 @@ Arguments description:
 --img - path to img file (only for ecnryption with image)
 --hack_tries - number of hack tries
 ```
+
+***
+
+Install require packeges:
+
+'pip install -r requirements.txt'
