@@ -71,4 +71,4 @@ Arguments description:
 
 Install require packeges:
 
-'pip install -r requirements.txt'
+`pip install -r requirements.txt`
