@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mainfile=main.py
+mainfile=EncryptorCMD.py
 
 echo '[TESTING] Using raw key value'
 

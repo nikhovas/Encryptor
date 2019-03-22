@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from collections import Counter
+import Exceptions
 
 
 class Cryptor(ABC):
@@ -65,8 +66,7 @@ class Vernam(Cryptor):
 
     @staticmethod
     def hack(byte_arr, trying_num):
-        print('[VERNAM] no hack method available')
-        exit()
+        raise Exceptions.NoVernamHackException
 
 
 class Vigenere(Cryptor):
@@ -85,5 +85,7 @@ class Vigenere(Cryptor):
 
     @staticmethod
     def hack(byte_arr, trying_num):
-        print('[VIGENERE] no hack method available')
-        exit()
+        raise Exceptions.NoVigenereHackException
+
+
+cryptors = {'caesar': Caesar, 'vigenere': Vigenere, 'vernam': Vernam}

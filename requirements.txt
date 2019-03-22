@@ -3,3 +3,4 @@ django
 pillow
 image
 numpy
+PyQt5

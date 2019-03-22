@@ -2,6 +2,7 @@ import sys
 import os
 import numpy
 from PIL import Image
+import Exceptions
 
 
 def get_right_bit(num):
@@ -56,8 +57,7 @@ class BMPFile:
         img_size = os.path.getsize(img)
 
         if img_size - (74 + int_size + arr_size) < 0:
-            print('error')
-            exit()
+            raise Exceptions.SmallImageException()
 
         f2.write(f1.read(74))
         f2.write(bytearray([set_right_bit(f1.read(1)[0], j) for j in to_bit_array(arr_size, int_size)]))
@@ -161,7 +161,7 @@ class IOManager:
             elif args.src.endswith('png'):
                 self.input_arr = PNGFile.open(args.src)
             else:
-                print('[ERROR] Only .png and .bmp are supported')
+                raise Exceptions.BadInputPictFormatException()
         else:
             self.input_arr = bytearray(open(args.src, 'rb').read())
 
@@ -177,7 +177,7 @@ class IOManager:
             elif self.dest.endswith('png'):
                 PNGFile.write(self.img, self.dest, res_arr)
             else:
-                print('[ERROR] .png and .bmp are supported')
+                raise Exceptions.BadOutputPictFormatException()
         else:
             file = open(self.dest, 'wb+')
             file.write(bytearray(res_arr))

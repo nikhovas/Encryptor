@@ -1,6 +1,7 @@
 from Command import Command
 import argparse
 import sys
+import Locales
 
 
 def exception_handler(exctype, value, traceback):
@@ -13,6 +14,7 @@ def exception_handler(exctype, value, traceback):
 
 
 sys.excepthook = exception_handler
+Locales.locales = Locales.eng_locales
 
 
 parser = argparse.ArgumentParser()
