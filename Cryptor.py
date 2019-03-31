@@ -86,6 +86,3 @@ class Vigenere(Cryptor):
     @staticmethod
     def hack(byte_arr, trying_num):
         raise Exceptions.NoVigenereHackException
-
-
-cryptors = {'caesar': Caesar, 'vigenere': Vigenere, 'vernam': Vernam}

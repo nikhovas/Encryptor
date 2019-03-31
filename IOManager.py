@@ -149,26 +149,26 @@ class IOManager:
     input_arr = []
     key_arr = []
 
-    def __init__(self, args):
-        self.isEncode = args.crypt == 'encode'
-        self.dest = args.dest
-        self.img = args.img
-        self.useImg = args.useimg
+    def __init__(self, **kwargs):
+        self.isEncode = kwargs['crypt'] == 'encode'
+        self.dest = kwargs['dest']
+        self.img = kwargs['img']
+        self.useImg = kwargs['useimg']
 
         if self.useImg and not self.isEncode:
-            if args.src.endswith('bmp'):
-                self.input_arr = BMPFile.open(args.src)
-            elif args.src.endswith('png'):
-                self.input_arr = PNGFile.open(args.src)
+            if kwargs['src'].endswith('bmp'):
+                self.input_arr = BMPFile.open(kwargs['src'])
+            elif kwargs['src'].endswith('png'):
+                self.input_arr = PNGFile.open(kwargs['src'])
             else:
                 raise Exceptions.BadInputPictFormatException()
         else:
-            self.input_arr = bytearray(open(args.src, 'rb').read())
+            self.input_arr = bytearray(open(kwargs['src'], 'rb').read())
 
-        if args.key is not None:
-            self.key_arr = bytearray(open(args.key, 'rb').read())
-        elif args.key_raw is not None:
-            self.key_arr = bytearray(args.key_raw, sys.stdin.encoding)
+        if kwargs['key'] is not None:
+            self.key_arr = bytearray(open(kwargs['key'], 'rb').read())
+        elif kwargs['key_raw'] is not None:
+            self.key_arr = bytearray(kwargs['key_raw'], sys.stdin.encoding)
 
     def push(self, res_arr):
         if self.useImg and self.isEncode:

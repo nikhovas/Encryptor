@@ -8,6 +8,7 @@ from Cryptor import *
 from IOManager import IOManager
 import Exceptions
 import Locales
+from Globals import *
 
 
 class EncryptorApp(QtWidgets.QMainWindow, Design.Ui_MainWindow):
@@ -48,22 +49,22 @@ def set_key(n: int, caller: EncryptorApp, args: argparse.Namespace):
 
 def set_crypt_alghorithm(n: int, caller: EncryptorApp, args: argparse.Namespace):
     if n == 1:
-        args.crypt = 'encode'
+        args.crypt = CryptType.encode.value
     elif n == 2:
-        args.crypt = 'encode'
+        args.crypt = CryptType.encode.value
     elif n == 3:
-        args.crypt = 'decode'
+        args.crypt = CryptType.decode.value
     elif n == 4:
-        args.crypt = 'hack'
+        args.crypt = CryptType.hack.value
         if caller.cryptType.currentIndex() != 0:
             raise Exceptions.HackIsNotCaesarException()
 
     if caller.cryptType.currentIndex() == 0:
-        args.algorithm = 'caesar'
+        args.algorithm = CryptAlghorithm.caesar.value
     elif caller.cryptType.currentIndex() == 1:
-        args.algorithm = 'vigenere'
+        args.algorithm = CryptAlghorithm.vigenere.value
     else:
-        args.algorithm = 'vernam'
+        args.algorithm = CryptAlghorithm.vernam.value
 
 
 def set_img(n: int, caller: EncryptorApp, args: argparse.Namespace):
@@ -104,13 +105,13 @@ def raw_src_mode(caller: EncryptorApp):
     args.dest = caller.var1_dest.displayText()
     alg = ''
     if caller.cryptType.currentIndex() == 0:
-        alg = 'caesar'
+        alg = CryptAlghorithm.caesar.value
     elif caller.cryptType.currentIndex() == 1:
-        alg = 'vigenere'
+        alg = CryptAlghorithm.vigenere.value
     else:
-        alg = 'vernam'
+        alg = CryptAlghorithm.vernam.value
     arr = cryptors[alg].encrypt(bytearray(raw_src, sys.stdin.encoding), bytearray(args.key_raw, sys.stdin.encoding))
-    io = IOManager(args)
+    io = IOManager(**vars(args))
     io.push(arr)
 
 
@@ -134,7 +135,7 @@ def execute_crypt(caller: EncryptorApp):
         set_img(cur_tab, caller, args)
         for i in additional_ckecks[cur_tab - 1]:
             i(cur_tab, caller, args)
-        Command.cmd_select(args)
+        Command.cmd_select(**vars(args))
 
 
 def exception_handler(exctype, value, traceback):
