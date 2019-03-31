@@ -20,18 +20,18 @@ class EncryptorApp(QtWidgets.QMainWindow, Design.Ui_MainWindow):
         self.setWindowIcon(QtGui.QIcon(script_dir + os.path.sep + 'icon.png'))
 
 
-def set_src(n: int, caller: EncryptorApp, args: argparse.Namespace):
+def set_src(n: int, caller: EncryptorApp, kwargs: dict):
     value = str(getattr(caller, 'var' + str(n) + '_src').displayText())
     if not os.path.isfile(value):
         raise Exceptions.BadInputFileException()
-    args.src = value
+    kwargs['src'] = value
 
 
-def set_dest(n: int, caller: EncryptorApp, args: argparse.Namespace):
-    args.dest = str(getattr(caller, 'var' + str(n) + '_dest').displayText())
+def set_dest(n: int, caller: EncryptorApp, kwargs: dict):
+    kwargs['dest'] = str(getattr(caller, 'var' + str(n) + '_dest').displayText())
 
 
-def set_key(n: int, caller: EncryptorApp, args: argparse.Namespace):
+def set_key(n: int, caller: EncryptorApp, kwargs: dict):
     key = str(getattr(caller, 'var' + str(n) + '_key').displayText())
     keyraw = str(getattr(caller, 'var' + str(n) + '_keyraw').displayText())
 
@@ -42,67 +42,67 @@ def set_key(n: int, caller: EncryptorApp, args: argparse.Namespace):
             raise Exceptions.BadKeyFileException()
 
     if keyraw != '':
-        args.key_raw = keyraw
+        kwargs['key_raw'] = keyraw
     else:
-        args.key = key
+        kwargs['key'] = key
 
 
-def set_crypt_alghorithm(n: int, caller: EncryptorApp, args: argparse.Namespace):
+def set_crypt_alghorithm(n: int, caller: EncryptorApp, kwargs: dict):
     if n == 1:
-        args.crypt = CryptType.encode.value
+        kwargs['crypt'] = CryptType.encode.value
     elif n == 2:
-        args.crypt = CryptType.encode.value
+        kwargs['crypt'] = CryptType.encode.value
     elif n == 3:
-        args.crypt = CryptType.decode.value
+        kwargs['crypt'] = CryptType.decode.value
     elif n == 4:
-        args.crypt = CryptType.hack.value
+        kwargs['crypt'] = CryptType.hack.value
         if caller.cryptType.currentIndex() != 0:
             raise Exceptions.HackIsNotCaesarException()
 
     if caller.cryptType.currentIndex() == 0:
-        args.algorithm = CryptAlghorithm.caesar.value
+        kwargs['algorithm'] = CryptAlghorithm.caesar.value
     elif caller.cryptType.currentIndex() == 1:
-        args.algorithm = CryptAlghorithm.vigenere.value
+        kwargs['algorithm'] = CryptAlghorithm.vigenere.value
     else:
-        args.algorithm = CryptAlghorithm.vernam.value
+        kwargs['algorithm'] = CryptAlghorithm.vernam.value
 
 
-def set_img(n: int, caller: EncryptorApp, args: argparse.Namespace):
+def set_img(n: int, caller: EncryptorApp, kwargs: dict):
     if n == 2:
         img = str(caller.var2_img.displayText())
         if img != '':
             if not os.path.isfile(img):
                 raise Exceptions.BadImageFileException()
-            args.img = img
-            args.useimg = True
+            kwargs['img'] = img
+            kwargs['useimg'] = True
         else:
-            args.useimg = False
+            kwargs['useimg'] = False
     elif n == 3 or n == 4:
         if getattr(caller, 'var' + str(n) + '_useImg').checkState():
-            args.useimg = True
+            kwargs['useimg'] = True
         else:
-            args.useimg = False
+            kwargs['useimg'] = False
 
 
-def set_hack_tries(n: int, caller: EncryptorApp, args: argparse.Namespace):
+def set_hack_tries(n: int, caller: EncryptorApp, kwargs: dict):
     if n == 4:
-        args.hack_tries = caller.var4_hackTries.value()
+        kwargs['hack_tries'] = caller.var4_hackTries.value()
 
 
 def raw_src_mode(caller: EncryptorApp):
-    args = argparse.Namespace()
+    kwargs = dict()
     raw_src = str(caller.var1_textArea.toPlainText())
-    args.key_raw = str(caller.var1_keyraw.displayText())
-    args.img = str(caller.var1_img.displayText())
-    args.useimg = False
-    args.key = None
-    args.crypt = 'encode'
-    args.src = os.path.realpath(__file__)
-    if args.img != '':
-        if not os.path.isfile(args.img):
+    kwargs['key_raw'] = str(caller.var1_keyraw.displayText())
+    kwargs['img'] = str(caller.var1_img.displayText())
+    kwargs['useimg'] = False
+    kwargs['key'] = None
+    kwargs['crypt'] = 'encode'
+    kwargs['src'] = os.path.realpath(__file__)
+    if kwargs['img'] != '':
+        if not os.path.isfile(kwargs['img']):
             raise Exceptions.BadImageFileException()
-        args.useimg = True
-    args.dest = caller.var1_dest.displayText()
+        kwargs['useimg'] = True
+    kwargs['dest'] = caller.var1_dest.displayText()
     alg = ''
     if caller.cryptType.currentIndex() == 0:
         alg = CryptAlghorithm.caesar.value
@@ -110,8 +110,8 @@ def raw_src_mode(caller: EncryptorApp):
         alg = CryptAlghorithm.vigenere.value
     else:
         alg = CryptAlghorithm.vernam.value
-    arr = cryptors[alg].encrypt(bytearray(raw_src, sys.stdin.encoding), bytearray(args.key_raw, sys.stdin.encoding))
-    io = IOManager(**vars(args))
+    arr = cryptors[alg].encrypt(bytearray(raw_src, sys.stdin.encoding), bytearray(kwargs['key_raw'], sys.stdin.encoding))
+    io = IOManager(**kwargs)
     io.push(arr)
 
 
@@ -125,17 +125,17 @@ def execute_crypt(caller: EncryptorApp):
     if cur_tab == 1:
         raw_src_mode(caller)
     else:
-        args = argparse.Namespace()
-        args.key = None
-        args.key_raw = None
-        args.img = None
-        args.hack_tries = None
-        set_dest(cur_tab, caller, args)
-        set_crypt_alghorithm(cur_tab, caller, args)
-        set_img(cur_tab, caller, args)
+        kwargs = dict()
+        kwargs['key'] = None
+        kwargs['key_raw'] = None
+        kwargs['img'] = None
+        kwargs['hack_tries'] = None
+        set_dest(cur_tab, caller, kwargs)
+        set_crypt_alghorithm(cur_tab, caller, kwargs)
+        set_img(cur_tab, caller, kwargs)
         for i in additional_ckecks[cur_tab - 1]:
-            i(cur_tab, caller, args)
-        Command.cmd_select(**vars(args))
+            i(cur_tab, caller, kwargs)
+        Command.cmd_select(**kwargs)
 
 
 def exception_handler(exctype, value, traceback):
