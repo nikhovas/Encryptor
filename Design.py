@@ -12,7 +12,7 @@ class FileEdit(QtWidgets.QLineEdit):
     def dragEnterEvent(self, event):
         data = event.mimeData()
         urls = data.urls()
-        if (urls and urls[0].scheme() == 'file'):
+        if urls and urls[0].scheme() == 'file':
             event.acceptProposedAction()
 
     def dragMoveEvent(self, event):
