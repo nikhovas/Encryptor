@@ -1,10 +1,8 @@
 import sys
 from PyQt5 import QtWidgets, QtGui
 import Design
-import argparse
 import os
 from Command import Command
-from Cryptor import *
 from IOManager import IOManager
 import Exceptions
 import Locales
@@ -20,18 +18,24 @@ class EncryptorApp(QtWidgets.QMainWindow, Design.Ui_MainWindow):
         self.setWindowIcon(QtGui.QIcon(script_dir + os.path.sep + 'icon.png'))
 
 
-def set_src(n: int, caller: EncryptorApp, kwargs: dict):
+def default_checks(n: int, caller: EncryptorApp) -> dict:
     value = str(getattr(caller, 'var' + str(n) + '_src').displayText())
     if not os.path.isfile(value):
         raise Exceptions.BadInputFileException()
-    kwargs['src'] = value
+    dictionary = {'src': value,
+                  'dest': str(getattr(caller, 'var' + str(n) + '_dest').displayText()),
+                  'algorithm': CryptAlghorithm.list()[caller.cryptType.currentIndex()],
+                  'crypt': CryptType.list()[n - 2],
+                  'img': str(caller.var2_img.displayText())
+                  }
+    if n == 2:
+        dictionary['useimg'] = dictionary['img'] != ''
+    elif n == 3 or n == 4:
+        dictionary['useimg'] = getattr(caller, 'var' + str(n) + '_useImg').checkState()
+    return dictionary
 
 
-def set_dest(n: int, caller: EncryptorApp, kwargs: dict):
-    kwargs['dest'] = str(getattr(caller, 'var' + str(n) + '_dest').displayText())
-
-
-def set_key(n: int, caller: EncryptorApp, kwargs: dict):
+def set_key(n: int, caller: EncryptorApp) -> dict:
     key = str(getattr(caller, 'var' + str(n) + '_key').displayText())
     keyraw = str(getattr(caller, 'var' + str(n) + '_keyraw').displayText())
 
@@ -42,99 +46,44 @@ def set_key(n: int, caller: EncryptorApp, kwargs: dict):
             raise Exceptions.BadKeyFileException()
 
     if keyraw != '':
-        kwargs['key_raw'] = keyraw
+        return {'key_raw': keyraw}
     else:
-        kwargs['key'] = key
+        return {'key': key}
 
 
-def set_crypt_alghorithm(n: int, caller: EncryptorApp, kwargs: dict):
-    if n == 1:
-        kwargs['crypt'] = CryptType.encode.value
-    elif n == 2:
-        kwargs['crypt'] = CryptType.encode.value
-    elif n == 3:
-        kwargs['crypt'] = CryptType.decode.value
-    elif n == 4:
-        kwargs['crypt'] = CryptType.hack.value
-        if caller.cryptType.currentIndex() != 0:
-            raise Exceptions.HackIsNotCaesarException()
-
-    if caller.cryptType.currentIndex() == 0:
-        kwargs['algorithm'] = CryptAlghorithm.caesar.value
-    elif caller.cryptType.currentIndex() == 1:
-        kwargs['algorithm'] = CryptAlghorithm.vigenere.value
-    else:
-        kwargs['algorithm'] = CryptAlghorithm.vernam.value
-
-
-def set_img(n: int, caller: EncryptorApp, kwargs: dict):
-    if n == 2:
-        img = str(caller.var2_img.displayText())
-        if img != '':
-            if not os.path.isfile(img):
-                raise Exceptions.BadImageFileException()
-            kwargs['img'] = img
-            kwargs['useimg'] = True
-        else:
-            kwargs['useimg'] = False
-    elif n == 3 or n == 4:
-        if getattr(caller, 'var' + str(n) + '_useImg').checkState():
-            kwargs['useimg'] = True
-        else:
-            kwargs['useimg'] = False
-
-
-def set_hack_tries(n: int, caller: EncryptorApp, kwargs: dict):
-    if n == 4:
-        kwargs['hack_tries'] = caller.var4_hackTries.value()
+def set_hack_tries(n: int, caller: EncryptorApp) -> dict:
+    return {'hack_tries': caller.var4_hackTries.value()}
 
 
 def raw_src_mode(caller: EncryptorApp):
-    kwargs = dict()
+    kwargs = {'key_raw': str(caller.var1_keyraw.displayText()),
+              'img': str(caller.var1_img.displayText()),
+              'useimg': False, 'key': None, 'crypt': 'encode', 'src': os.path.realpath(__file__),
+              'dest': caller.var1_dest.displayText()
+              }
     raw_src = str(caller.var1_textArea.toPlainText())
-    kwargs['key_raw'] = str(caller.var1_keyraw.displayText())
-    kwargs['img'] = str(caller.var1_img.displayText())
-    kwargs['useimg'] = False
-    kwargs['key'] = None
-    kwargs['crypt'] = 'encode'
-    kwargs['src'] = os.path.realpath(__file__)
     if kwargs['img'] != '':
         if not os.path.isfile(kwargs['img']):
             raise Exceptions.BadImageFileException()
         kwargs['useimg'] = True
-    kwargs['dest'] = caller.var1_dest.displayText()
-    alg = ''
-    if caller.cryptType.currentIndex() == 0:
-        alg = CryptAlghorithm.caesar.value
-    elif caller.cryptType.currentIndex() == 1:
-        alg = CryptAlghorithm.vigenere.value
-    else:
-        alg = CryptAlghorithm.vernam.value
-    arr = cryptors[alg].encrypt(bytearray(raw_src, sys.stdin.encoding), bytearray(kwargs['key_raw'], sys.stdin.encoding))
+    arr = CryptAlghorithm.crypt_class(caller.cryptType.currentIndex()).encrypt(bytearray(raw_src, sys.stdin.encoding),
+                                                                               bytearray(kwargs['key_raw'],
+                                                                                         sys.stdin.encoding))
     io = IOManager(**kwargs)
     io.push(arr)
 
 
-
 def execute_crypt(caller: EncryptorApp):
-    additional_ckecks = [[],
-                         [set_src, set_key],
-                         [set_src, set_key],
-                         [set_src, set_hack_tries]]
     cur_tab = caller.tabWidget.currentIndex() + 1
     if cur_tab == 1:
         raw_src_mode(caller)
     else:
-        kwargs = dict()
-        kwargs['key'] = None
-        kwargs['key_raw'] = None
-        kwargs['img'] = None
-        kwargs['hack_tries'] = None
-        set_dest(cur_tab, caller, kwargs)
-        set_crypt_alghorithm(cur_tab, caller, kwargs)
-        set_img(cur_tab, caller, kwargs)
-        for i in additional_ckecks[cur_tab - 1]:
-            i(cur_tab, caller, kwargs)
+        kwargs = {'key': None, 'key_raw': None, 'img': None, 'hack_tries': None}
+        kwargs.update(default_checks(cur_tab, caller))
+        if cur_tab == 2 or cur_tab == 3:
+            kwargs.update(set_key(cur_tab, caller))
+        else:
+            kwargs.update(set_hack_tries(cur_tab, caller))
         Command.cmd_select(**kwargs)
 
 

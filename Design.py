@@ -33,6 +33,7 @@ class FileEdit(QtWidgets.QLineEdit):
 
 
 class Ui_MainWindow(object):
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("Шифратор")
         MainWindow.resize(573, 344)

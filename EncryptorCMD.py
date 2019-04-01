@@ -1,5 +1,5 @@
 from Command import Command
-from Globals import cryptors, CryptType
+from Globals import CryptType, CryptAlghorithm
 import argparse
 import sys
 import Locales
@@ -19,8 +19,8 @@ if __name__ == "__main__":
     Locales.locales = Locales.eng_locales
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('crypt', choices=list(map(str, CryptType)), type=str, help='what to do')
-    parser.add_argument('algorithm', choices=cryptors.keys(), type=str, help='crypt type')
+    parser.add_argument('crypt', choices=CryptType.list(), type=str, help='what to do')
+    parser.add_argument('algorithm', choices=CryptAlghorithm.list(), type=str, help='crypt type')
     parser.add_argument('src', type=str, help='source')
     parser.add_argument('dest', type=str, help='destination')
     parser.add_argument('--key', type=str, help='key')
